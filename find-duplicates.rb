@@ -24,9 +24,17 @@ class PolicyLeaveLongest
 end
 
 options = {
+  :bar => lambda { |size| ProgressBar.create(:title => "Hashing",
+                                             :format => '%t: %e %P |%b%i|',
+                                             :total => size) },
   :dry => true,
   :remove_policy => PolicyLeaveLongest.new
 }
+
+class DummyBar
+  def increment
+  end
+end
 
 paths = []
 begin
@@ -36,6 +44,10 @@ begin
             'default. dry run. just show groups duplicated files 
                                       and which one will be left') do |v|
       options[:dry] = true
+    end
+    opts.on('-B', '--no-bar',
+            'hide progress bar') do |v|
+      options[:bar] = lambda { |size| DummyBar.new }
     end
     opts.on('-r', '--run',
             'delete duplicates by the specified policy') do |v|
@@ -91,9 +103,7 @@ end
 groups = Groups.new
 files = paths.map { |path| Dir.glob(path + '/**/*') }.flatten
 
-bar = ProgressBar.create(:title => "Hashing",
-                         :format => '%t: %e %P |%b%i|',
-                         :total => files.size)
+bar = options[:bar].call files.size
 
 files.each do |file|
   bar.increment
