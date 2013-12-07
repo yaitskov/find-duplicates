@@ -43,11 +43,16 @@ class Groups
     @hashes = {}    
   end
   def add(path)
-    md5 = Digest::MD5.new    
-    File.open(path, 'rb') do |file_h|
-      file_h.each(8192) do |block|
-        md5.update block
+    md5 = Digest::MD5.new
+    begin
+      File.open(path, 'rb') do |file_h|
+        file_h.each(8192) do |block|
+          md5.update block
+        end
       end
+    rescue
+      $stderr.puts "problem: #{ $! }"
+      return
     end
     digest = md5.digest
     if @hashes.key?(digest)
