@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.email   = 'rtfm.rtfm.rtfm@gmail.com'
   s.files = [ 'bin/find-duplicates',              
               'lib/find-duplicates.rb',
-              'Gemspec'
+              'find-duplicates.gemspec'
             ]
   s.require_paths = [ 'bin', 'lib' ]
   s.executable = 'find-duplicates'
