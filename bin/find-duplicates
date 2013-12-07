@@ -74,7 +74,7 @@ rescue
   exit 1
 end
 
-find_duplicates options paths
+find_duplicates(options,paths)
 
 
 
