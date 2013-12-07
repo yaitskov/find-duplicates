@@ -6,7 +6,8 @@ function err() {
     exit 1
 }
 
-mkdir test || err mkdir test
+rm -rf test
+mkdir -p test || err mkdir test
 
 for i in a/b/c  e/g/d x/y ; do
     mkdir -p $i || err mkdir $i
