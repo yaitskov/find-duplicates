@@ -10,12 +10,12 @@ rm -rf test
 mkdir -p test || err mkdir test
 
 for i in a/b/c  e/g/d x/y ; do
-    mkdir -p $i || err mkdir $i
+    mkdir -p test/$i || err mkdir $i
 done
 
 echo hello world > test/file || err file
 
-find test -type d -exec cp test/file {} \;  || err copy files
+find test -mindepth 1 -type d -exec cp test/file {}-copy \;  || err copy files
 
-./find-duplicates.rb -l test || err test failed
+#./find-duplicates.rb -l test || err test failed
 
