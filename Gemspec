@@ -14,5 +14,6 @@ Gem::Specification.new do |s|
   s.executable = 'find-duplicates'
   s.license = 'Apache 2'
   s.homepage = 'https://github.com/yaitskov/find-duplicates'
-  s.add_runtime_dependency "ruby-progressbar"
+  s.add_dependency "ruby-progressbar"
+  s.add_dependency "bundler"  
 end
