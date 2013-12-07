@@ -1,6 +1,5 @@
 #!/usr/bin/ruby
 
-
 # this tool is written directly for 1 usecase.
 # There is 2 folders containing relativly similar files
 # but these files are in different pathes.
@@ -15,15 +14,34 @@
 require 'digest/md5'
 require 'optparse'
 
+class PolicyLeaveLongest
+  def choose_to_die(files)
+    files.sort { |a,b| a.size - b.size }.slice 1..-1
+  end
+end
 
-options = { :remove => false }
+class PolicyDry
+  def choose_to_die(files)
+    puts ([files.first] + files.slice(1..-1).map { |s| "   " + s }).join("\n")
+    []
+  end
+end  
+
+options = {
+  :remove_policy => PolicyDry.new
+}
+
 paths = []
 begin
   OptionParser.new do |opts|
     opts.banner = 'Usage: find-duplicates.rb [ options ] <path-to-dir>'
-    opts.on('-d', '--remove-duplicates',
-            'find duplicated files and remove them') do |v|
-      options[:remove] = true 
+    opts.on('-d', '--dry',
+            'default policy. dry run. just show groups duplicated files') do |v|
+      options[:remove_policy] = PolicyDry.new
+    end
+    opts.on('-l', '--longest',
+            'policy leaves a file with longest name among duplicates') do |v|
+      options[:remove_policy] = PolicyLeaveLongest.new
     end
   end.parse!
 
@@ -66,16 +84,6 @@ class Groups
   def duplicates
     @hashes.find_all { |k,v| v.size > 1 }    
   end
-  def print_info
-    dups = self.duplicates
-    if dups.empty?
-      puts "no duplicates"
-    else
-      dups.each do |k,v| 
-        puts ([v.first] + v.slice(1..-1).map { |s| "   " + s }).join("\n")
-      end
-    end
-  end
 end
 
 groups = Groups.new
@@ -86,10 +94,12 @@ paths.each do |path|
   end
 end
 
-if options[:remove]
-  raise 'no supported yet'
-else # print only
-  groups.print_info
+groups.duplicates.each do |k,group|
+  options[:remove_policy].choose_to_die(group).each do |file|
+      File.delete file
+  end
 end
+
+
 
 
