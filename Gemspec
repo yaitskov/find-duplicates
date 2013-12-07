@@ -6,8 +6,11 @@ Gem::Specification.new do |s|
   s.description = 'Find and remove duplicated files'
   s.authors = [ 'Daneel S. Yaitskov' ]
   s.email   = 'rtfm.rtfm.rtfm@gmail.com'
-  s.files = [ 'bin/find-duplicates', 'Gemspec' ]
-  s.require_paths = [ 'bin' ]
+  s.files = [ 'bin/find-duplicates',              
+              'lib/find-duplicates.rb',
+              'Gemspec'
+            ]
+  s.require_paths = [ 'bin', 'lib' ]
   s.executable = 'find-duplicates'
   s.license = 'Apache 2'
   s.homepage = 'https://github.com/yaitskov/find-duplicates'
