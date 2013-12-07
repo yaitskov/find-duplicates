@@ -25,15 +25,10 @@
 # Script builds hashes for all files.
 # Groups pathes to files with the same hash.
 
-require 'digest/md5'
 require 'optparse'
 require 'ruby-progressbar'
-
-class PolicyLeaveLongest
-  def choose_to_die(files)
-    files.sort { |a,b| b.size - a.size }
-  end
-end
+require 'find-duplicates'
+include FindDuplicates
 
 options = {
   :bar => lambda { |size| ProgressBar.create(:title => "Hashing",
@@ -42,11 +37,6 @@ options = {
   :dry => true,
   :remove_policy => PolicyLeaveLongest.new
 }
-
-class DummyBar
-  def increment
-  end
-end
 
 paths = []
 begin
@@ -84,56 +74,7 @@ rescue
   exit 1
 end
 
-class Groups
-  def initialize
-    @hashes = {}    
-  end
-  def add(path)
-    md5 = Digest::MD5.new
-    begin
-      File.open(path, 'rb') do |file_h|
-        file_h.each(8192) do |block|
-          md5.update block
-        end
-      end
-    rescue
-      $stderr.puts "problem: #{ $! }"
-      return
-    end
-    digest = md5.digest
-    if @hashes.key?(digest)
-      @hashes[digest] << path
-    else
-      @hashes[digest] = [ path ]
-    end
-  end
-  def duplicates
-    @hashes.find_all { |k,v| v.size > 1 }    
-  end
-end
-
-groups = Groups.new
-files = paths.map { |path| Dir.glob(path + '/**/*') }.flatten
-
-bar = options[:bar].call files.size
-
-files.each do |file|
-  bar.increment
-  next if File.directory?(file)
-  groups.add file
-end
-
-groups.duplicates.each do |k,group|
-  death_queue = options[:remove_policy].choose_to_die(group)
-  survivor = [death_queue.first]
-  death_queue = death_queue.slice(1..-1)
-  if options[:dry]
-    puts (survivor + death_queue.map { |s| "   " + s }).join("\n")
-  else
-    death_queue.each { |file| File.delete file }
-  end
-end
-
+find_duplicates options paths
 
 
 
