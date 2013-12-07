@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 
+# Daneel Yaitskov
+
 # this tool is written directly for 1 usecase.
 # There is 2 folders containing relativly similar files
 # but these files are in different pathes.
@@ -16,19 +18,13 @@ require 'optparse'
 
 class PolicyLeaveLongest
   def choose_to_die(files)
-    files.sort { |a,b| a.size - b.size }.slice 1..-1
+    files.sort { |a,b| b.size - a.size }
   end
 end
 
-class PolicyDry
-  def choose_to_die(files)
-    puts ([files.first] + files.slice(1..-1).map { |s| "   " + s }).join("\n")
-    []
-  end
-end  
-
 options = {
-  :remove_policy => PolicyDry.new
+  :dry => true,
+  :remove_policy => PolicyLeaveLongest.new
 }
 
 paths = []
@@ -36,8 +32,13 @@ begin
   OptionParser.new do |opts|
     opts.banner = 'Usage: find-duplicates.rb [ options ] <path-to-dir>'
     opts.on('-d', '--dry',
-            'default policy. dry run. just show groups duplicated files') do |v|
-      options[:remove_policy] = PolicyDry.new
+            'default. dry run. just show groups duplicated files 
+                                      and which one will be left') do |v|
+      options[:dry] = true
+    end
+    opts.on('-r', '--run',
+            'delete duplicates by the specified policy') do |v|
+      options[:dry] = false
     end
     opts.on('-l', '--longest',
             'policy leaves a file with longest name among duplicates') do |v|
@@ -95,8 +96,13 @@ paths.each do |path|
 end
 
 groups.duplicates.each do |k,group|
-  options[:remove_policy].choose_to_die(group).each do |file|
-      File.delete file
+  death_queue = options[:remove_policy].choose_to_die(group)
+  survivor = [death_queue.first]
+  death_queue = death_queue.slice(1..-1)
+  if options[:dry]
+    puts (survivor + death_queue.map { |s| "   " + s }).join("\n")
+  else
+    death_queue.each { |file| File.delete file }
   end
 end
 
