@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name    = 'find-duplicates'
-  s.version = '0.0.1'
+  s.version = '0.0.2'
   s.date    = '2013-12-07'
   s.summary = 'Find duplicated files'
   s.description = 'Find and remove duplicated files'
