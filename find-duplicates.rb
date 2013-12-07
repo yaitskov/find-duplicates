@@ -15,6 +15,7 @@
 
 require 'digest/md5'
 require 'optparse'
+require 'ruby-progressbar'
 
 class PolicyLeaveLongest
   def choose_to_die(files)
@@ -88,11 +89,16 @@ class Groups
 end
 
 groups = Groups.new
-paths.each do |path|
-  Dir.glob(path + '/**/*') do |file|
-    next if File.directory?(file)
-    groups.add file
-  end
+files = paths.map { |path| Dir.glob(path + '/**/*') }.flatten
+
+bar = ProgressBar.create(:title => "Hashing",
+                         :format => '%t: %e %P |%b%i|',
+                         :total => files.size)
+
+files.each do |file|
+  bar.increment
+  next if File.directory?(file)
+  groups.add file
 end
 
 groups.duplicates.each do |k,group|
