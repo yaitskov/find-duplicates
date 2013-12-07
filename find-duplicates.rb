@@ -14,9 +14,10 @@
 
 require 'digest/md5'
 require 'optparse'
-require 'yaml'
+
 
 options = { :remove => false }
+paths = []
 begin
   OptionParser.new do |opts|
     opts.banner = 'Usage: find-duplicates.rb [ options ] <path-to-dir>'
@@ -30,8 +31,9 @@ begin
     raise "there isn't any path given"  
   end
 
-  ARGV.each do |path| 
+  paths = ARGV.map do |path|
     raise "path '#{ path }' isn't a directory" if !File.directory?(path)
+    path.sub(/\/+ *$/, '')        
   end
 rescue 
   $stderr.puts "Error #{ $! }"
@@ -60,19 +62,24 @@ class Groups
     else
       @hashes[digest] = [ path ]
     end
-  end  
+  end
+  def duplicates
+    @hashes.find_all { |k,v| v.size > 1 }    
+  end
   def print_info
-    dups = @hashes.find_all { |k,v| v.size > 1 }
+    dups = self.duplicates
     if dups.empty?
       puts "no duplicates"
     else
-      puts dups.to_yaml
+      dups.each do |k,v| 
+        puts ([v.first] + v.slice(1..-1).map { |s| "   " + s }).join("\n")
+      end
     end
   end
 end
 
 groups = Groups.new
-ARGV.each do |path|
+paths.each do |path|
   Dir.glob(path + '/**/*') do |file|
     next if File.directory?(file)
     groups.add file
