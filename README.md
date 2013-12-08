@@ -20,3 +20,9 @@ There is one deletion policy.
 A file from a duplicates group with longest path servive other are removed.
 Dry mode is used by default.
 
+
+
+Installation
+============
+
+$ sudo gem install find-duplicates
